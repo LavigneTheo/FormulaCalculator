@@ -28,6 +28,8 @@ Boolean listTotalCharT();
 Boolean listStrToStrT();
 Boolean treeToRpnT();
 Boolean placeChildrenT();
+Boolean getNodeIntValueT();
+Boolean ProcessNodeValueT();
 
 char* createMallocStr(char* str);
 

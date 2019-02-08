@@ -9,7 +9,6 @@ typedef struct NodeCalculator {
 	Boolean operator;
 	char* value;
 	
-	Boolean processed;
 	int totalValue;
 }NodeCalculator;
 
@@ -28,6 +27,8 @@ char* getOperator(char* expr);
 char* updateStr(char* expr, int start, int end, int index);
 char* treeToRpn(NodeCalculator* summit);
 void printPostFix(NodeCalculator* node);
+int getNodeIntValue(NodeCalculator* node);
+void ProcessNodeValue(NodeCalculator* Node);
 
 NodeCalculator* createSecondElem(char* subExpr, List* listOperatorPtr);
 NodeCalculator* createFirstElem(char* subExpr, List* listOperatorPtr);
@@ -39,6 +40,7 @@ void limitTriangle(char* expr, int* start, int* end);
 NodeCalculator* createNodeCalculator(char* expr, List* listPtr);
 char* rewriteStr(char* expr, int start, int end, int index);
 NodeCalculator* createTreeFromExpr(char* expr);
+void freeTreeCalculator(NodeCalculator* node);
 
 
 

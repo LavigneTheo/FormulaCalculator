@@ -202,7 +202,6 @@ NodeCalculator* createNodeCalculator(char* expr, List* listPtr) {
 		node->value = expr;
 		node->left = NULL;
 		node->right = NULL;
-		node->processed = FALSE;
 		if (isOperator(*expr)) {
 			node->operator = TRUE;
 			append(listPtr, &node);
@@ -276,7 +275,28 @@ void processTree(NodeCalculator* node) {
 	if (isOperator(node->right->value))
 		processTree(node->right);
 	if (isOperator(node->value))
-		processNodeValue(node);
+		getNodeIntValue(node);
+}
+
+int getNodeIntValue(NodeCalculator* node) {
+	if (node->operator == TRUE)
+		return node->totalValue;
+	return  strToInt(node->value);
+}
+
+void ProcessNodeValue(NodeCalculator* node) {
+	int a = getNodeIntValue(node->left);
+	int b = getNodeIntValue(node->right);
+	int value;
+	if (node->value == "*")
+		value = a * b;
+	if (node->value == "/")
+		value = a / b;
+	if (node->value == "+")
+		value = a + b;
+	if (node->value == "-")
+		value = a - b;
+	node->totalValue = value;
 }
 
 /* Retourne les borne la prochaine sous exression à inséré dans l'arbre. Le retour se fait par

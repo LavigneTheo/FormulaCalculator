@@ -23,6 +23,38 @@ void launchTests() {
 	listStrToStrT();
 	treeToRpnT();
 	placeChildrenT();
+	getNodeIntValueT();
+}
+
+Boolean getNodeIntValueT() {
+	NodeCalculator* node = malloc(sizeof(NodeCalculator));
+	node->value = "100";
+	node->operator = FALSE;
+	assertEqualsInt(100, getNodeIntValue(node), __FILE__, __LINE__);
+	free(node);
+
+	node = malloc(sizeof(NodeCalculator));
+	node->operator = TRUE;
+	node->totalValue = 298;
+	assertEqualsInt(298, getNodeIntValue(node), __FILE__, __LINE__);
+	free(node);
+}
+
+Boolean ProcessNodeValueT() {
+	char* expr = createMallocStr("2+3");
+	NodeCalculator* summit = createTreeFromExpr(expr);
+
+	ProcessNodeValue(summit);
+	assertEqualsInt(5, summit->totalValue, __FILE__, __LINE__);
+	free(expr);
+	freeTreeCalculator(summit);
+
+	expr = createMallocStr("2+3*(5+2)");
+	summit = createTreeFromExpr(expr);
+
+	ProcessNodeValue(summit);
+	assertEqualsInt(23, summit->totalValue, __FILE__, __LINE__);
+
 }
 
 Boolean placeChildrenT() {
@@ -286,7 +318,6 @@ Boolean createNodeCalculatorT() {
 	assertNull(node->right, __FILE__, __LINE__);
 	assertNull(node->left, __FILE__, __LINE__);
 	assertEqualsBool(FALSE, node->operator, __FILE__, __LINE__);
-	assertEqualsBool(FALSE, node->processed, __FILE__, __LINE__);
 	free(node);
 
 	node = createNodeCalculator("*", listPtr);
@@ -294,7 +325,6 @@ Boolean createNodeCalculatorT() {
 	assertNull(node->right, __FILE__, __LINE__);
 	assertNull(node->left, __FILE__, __LINE__);
 	assertEqualsBool(TRUE, node->operator, __FILE__, __LINE__);
-	assertEqualsBool(FALSE, node->processed, __FILE__, __LINE__);
 	free(node);
 
 	node = createNodeCalculator("+", listPtr);
@@ -302,7 +332,6 @@ Boolean createNodeCalculatorT() {
 	assertNull(node->right, __FILE__, __LINE__);
 	assertNull(node->left, __FILE__, __LINE__);
 	assertEqualsBool(TRUE, node->operator, __FILE__, __LINE__);
-	assertEqualsBool(FALSE, node->processed, __FILE__, __LINE__);
 	free(node);
 
 	node = createNodeCalculator("-", listPtr);
@@ -310,7 +339,6 @@ Boolean createNodeCalculatorT() {
 	assertNull(node->right, __FILE__, __LINE__);
 	assertNull(node->left, __FILE__, __LINE__);
 	assertEqualsBool(TRUE, node->operator, __FILE__, __LINE__);
-	assertEqualsBool(FALSE, node->processed, __FILE__, __LINE__);
 	free(node);
 
 	node = createNodeCalculator("/", listPtr);
@@ -318,7 +346,6 @@ Boolean createNodeCalculatorT() {
 	assertNull(node->right, __FILE__, __LINE__);
 	assertNull(node->left, __FILE__, __LINE__);
 	assertEqualsBool(TRUE, node->operator, __FILE__, __LINE__);
-	assertEqualsBool(FALSE, node->processed, __FILE__, __LINE__);
 	free(node);
 
 	node = createNodeCalculator("40", listPtr);
@@ -326,7 +353,6 @@ Boolean createNodeCalculatorT() {
 	assertNull(node->right, __FILE__, __LINE__);
 	assertNull(node->left, __FILE__, __LINE__);
 	assertEqualsBool(FALSE, node->operator, __FILE__, __LINE__);
-	assertEqualsBool(FALSE, node->processed, __FILE__, __LINE__);
 	free(node);
 
 	node = createNodeCalculator("98765", listPtr);
@@ -334,8 +360,10 @@ Boolean createNodeCalculatorT() {
 	assertNull(node->right, __FILE__, __LINE__);
 	assertNull(node->left, __FILE__, __LINE__);
 	assertEqualsBool(FALSE, node->operator, __FILE__, __LINE__);
-	assertEqualsBool(FALSE, node->processed, __FILE__, __LINE__);
 	free(node);
+
+	free_list(listPtr);
+	listPtr = get_list(NULL, sizeof(NodeCalculator*));
 
 	NodeCalculator* testNode = malloc(sizeof(NodeCalculator));
 	testNode->operator = TRUE;
@@ -349,7 +377,6 @@ Boolean createNodeCalculatorT() {
 	assertNull(node->right, __FILE__, __LINE__);
 	assertNull(node->left, __FILE__, __LINE__);
 	assertEqualsBool(TRUE, node->operator, __FILE__, __LINE__);
-	assertEqualsBool(FALSE, node->processed, __FILE__, __LINE__);
 	free(node);
 
 	testNode = malloc(sizeof(NodeCalculator));
@@ -364,7 +391,6 @@ Boolean createNodeCalculatorT() {
 	assertNull(node->right, __FILE__, __LINE__);
 	assertNull(node->left, __FILE__, __LINE__);
 	assertEqualsBool(TRUE, node->operator, __FILE__, __LINE__);
-	assertEqualsBool(FALSE, node->processed, __FILE__, __LINE__);
 	free(node);
 	
 	free_list(listPtr);
