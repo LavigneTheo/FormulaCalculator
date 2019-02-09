@@ -1,6 +1,6 @@
 #include "Calculator.h"
 
-/* Détermine si le caractère passé en paramêtre est un opérateur
+/* Détermine si le caractère passé en paramètre est un opérateur
  * Params - char : le caractère à tester
  * Return - Boolean : TRUE si c'est un opérateur sinon false
  */
