@@ -3,13 +3,15 @@
 #include "Include.h"
 
 typedef struct NodeCalculator {
+	char* value;
+
 	struct NodeCalculator* right;
 	struct NodeCalculator* left;
 
 	Boolean operator;
-	char* value;
+	Boolean reverse;
 	
-	int totalValue;
+	float totalValue;
 }NodeCalculator;
 
 
@@ -27,8 +29,10 @@ char* getOperator(char* expr);
 char* updateStr(char* expr, int start, int end, int index);
 char* treeToRpn(NodeCalculator* summit);
 void printPostFix(NodeCalculator* node);
-int getNodeIntValue(NodeCalculator* node);
+float getNodeFloatValue(NodeCalculator* node);
 void ProcessNodeValue(NodeCalculator* Node);
+void processTree(NodeCalculator* node);
+void getFloatValues(NodeCalculator* node, float* num1, float* num2);
 
 NodeCalculator* createSecondElem(char* subExpr, List* listOperatorPtr);
 NodeCalculator* createFirstElem(char* subExpr, List* listOperatorPtr);

@@ -30,6 +30,10 @@ Boolean treeToRpnT();
 Boolean placeChildrenT();
 Boolean getNodeIntValueT();
 Boolean ProcessNodeValueT();
+Boolean processTreeT();
+Boolean assertEqualsFloatT();
+Boolean getFloatValuesT();
+
 
 char* createMallocStr(char* str);
 

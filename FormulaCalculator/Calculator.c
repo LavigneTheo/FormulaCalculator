@@ -53,10 +53,12 @@ void placeChildren(NodeCalculator* summit, NodeCalculator* first, NodeCalculator
 	if (isOperator(*first->value)) {
 		summit->left = first;
 		summit->right = second;
+		summit->reverse = FALSE;
 	}
 	else {
 		summit->left = second;
 		summit->right = first;
+		summit->reverse = TRUE;
 	}
 }
 
@@ -244,11 +246,18 @@ char* intToStr(int value) {
 	return res;
 }
 
+/* Détermine l'index de début fin de réécriture de la chaine.
+ * Fait également atentition a ne supprimer qu'une parenthèse ouvrante dans le cas
+ * de parenthèses multiples ex : '((2+2)...'
+ */
 char* updateStr(char* expr, int start, int end, int index) {
 	if (*(expr + start) == '(' && *(expr + end) != ')')
 		start++;
 	else if (*(expr + start) != '(' && *(expr + end) == ')')
 		end--;
+	else
+		while (*(expr + start + 1) == '(')
+			start++;
 	return rewriteStr(expr, start, end, index);
 }
 
@@ -272,29 +281,41 @@ char* rewriteStr(char* expr, int start, int end, int index) {
 void processTree(NodeCalculator* node) {
 	if (node->left != NULL)
 		processTree(node->left);
-	if (isOperator(node->right->value))
+	if (node->right != NULL && isOperator(*node->right->value))
 		processTree(node->right);
-	if (isOperator(node->value))
-		getNodeIntValue(node);
+	if (isOperator(*node->value))
+		ProcessNodeValue(node);
 }
 
-int getNodeIntValue(NodeCalculator* node) {
+float getNodeFloatValue(NodeCalculator* node) {
 	if (node->operator == TRUE)
 		return node->totalValue;
-	return  strToInt(node->value);
+	return  (float)strToInt(node->value);
+}
+
+void getFloatValues(NodeCalculator* node, float* num1, float* num2) {
+	if (!node->reverse) {
+		*num1 = getNodeFloatValue(node->left);
+		*num2 = getNodeFloatValue(node->right);
+	}
+	else {
+		*num2 = getNodeFloatValue(node->left);
+		*num1 = getNodeFloatValue(node->right);
+	}
 }
 
 void ProcessNodeValue(NodeCalculator* node) {
-	int a = getNodeIntValue(node->left);
-	int b = getNodeIntValue(node->right);
-	int value;
-	if (node->value == "*")
+	float a = 0, b = 0;
+	getFloatValues(node, &a, &b);
+
+	float value = 0;
+	if (*node->value == '*')
 		value = a * b;
-	if (node->value == "/")
+	if (*node->value == '/')
 		value = a / b;
-	if (node->value == "+")
+	if (*node->value == '+')
 		value = a + b;
-	if (node->value == "-")
+	if (*node->value == '-')
 		value = a - b;
 	node->totalValue = value;
 }

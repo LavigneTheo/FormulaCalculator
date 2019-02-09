@@ -24,19 +24,76 @@ void launchTests() {
 	treeToRpnT();
 	placeChildrenT();
 	getNodeIntValueT();
+	ProcessNodeValueT();
+	processTreeT();
+	assertEqualsFloatT();
+	getFloatValuesT();
 }
+
+Boolean getFloatValuesT() {
+	float num1 = 0, num2 = 0;
+
+	char* expr = createMallocStr("2+3");
+	NodeCalculator* summit = createTreeFromExpr(expr);
+	
+	getFloatValues(summit, &num1, &num2);
+	assertEqualsFloat(2.f, num1, __FILE__, __LINE__);
+	assertEqualsFloat(3.f, num2, __FILE__, __LINE__);
+	freeTreeCalculator(summit);
+
+	expr = createMallocStr("2* 3");
+	summit = createTreeFromExpr(expr);
+	summit->reverse = FALSE;
+
+	getFloatValues(summit, &num1, &num2);
+	assertEqualsFloat(3.f, num1, __FILE__, __LINE__);
+	assertEqualsFloat(2.f, num2, __FILE__, __LINE__);
+	freeTreeCalculator(summit);
+}
+
+Boolean processTreeT() {
+	char* expr = createMallocStr("2+3");
+	NodeCalculator* summit = createTreeFromExpr(expr);
+
+	processTree(summit);
+	assertEqualsFloat(5, summit->totalValue, __FILE__, __LINE__);
+	freeTreeCalculator(summit);
+
+	expr = createMallocStr("2+3*(5+2)");
+	summit = createTreeFromExpr(expr);
+
+	processTree(summit);
+	assertEqualsFloat(23, summit->totalValue, __FILE__, __LINE__);
+	freeTreeCalculator(summit);
+
+	expr = createMallocStr("  ((1+2)- (1+2)/3) * 2");
+	summit = createTreeFromExpr(expr);
+
+	processTree(summit);
+	assertEqualsFloat(4, summit->totalValue, __FILE__, __LINE__);
+	freeTreeCalculator(summit);
+
+	expr = createMallocStr("  (( 2 +(8-1) * 10 - 2)- ((7-0) * 2 -2)/12) * 2");
+	summit = createTreeFromExpr(expr);
+	printf("%s\n", treeToRpn(summit));
+
+	processTree(summit);
+	assertEqualsFloat(138, summit->totalValue, __FILE__, __LINE__);
+	freeTreeCalculator(summit);
+}
+
 
 Boolean getNodeIntValueT() {
 	NodeCalculator* node = malloc(sizeof(NodeCalculator));
 	node->value = "100";
 	node->operator = FALSE;
-	assertEqualsInt(100, getNodeIntValue(node), __FILE__, __LINE__);
+	assertEqualsInt(100, getNodeFloatValue(node), __FILE__, __LINE__);
 	free(node);
 
 	node = malloc(sizeof(NodeCalculator));
 	node->operator = TRUE;
 	node->totalValue = 298;
-	assertEqualsInt(298, getNodeIntValue(node), __FILE__, __LINE__);
+	assertEqualsInt(298, getNodeFloatValue(node), __FILE__, __LINE__);
 	free(node);
 }
 
@@ -45,16 +102,30 @@ Boolean ProcessNodeValueT() {
 	NodeCalculator* summit = createTreeFromExpr(expr);
 
 	ProcessNodeValue(summit);
-	assertEqualsInt(5, summit->totalValue, __FILE__, __LINE__);
-	free(expr);
+	assertEqualsFloat(5.f, summit->totalValue, __FILE__, __LINE__);
 	freeTreeCalculator(summit);
 
-	expr = createMallocStr("2+3*(5+2)");
+
+	expr = createMallocStr("2*13");
+	summit = createTreeFromExpr(expr);
+	
+	processTree(summit);
+	assertEqualsFloat(26.f, summit->totalValue, __FILE__, __LINE__);
+	freeTreeCalculator(summit);
+
+	expr = createMallocStr("10/2");
 	summit = createTreeFromExpr(expr);
 
-	ProcessNodeValue(summit);
-	assertEqualsInt(23, summit->totalValue, __FILE__, __LINE__);
+	processTree(summit);
+	assertEqualsFloat(5.f, summit->totalValue, __FILE__, __LINE__);
+	freeTreeCalculator(summit);
 
+}
+
+Boolean assertEqualsFloatT() {
+	assertEqualsFloat(10.56788f, 10.56788888f, __FILE__, __LINE__);
+	assertEqualsFloat(9.9, 9.9, __FILE__, __LINE__);
+	assertEqualsFloat(10.99999, 10.999991, __FILE__, __LINE__);
 }
 
 Boolean placeChildrenT() {
@@ -117,7 +188,7 @@ Boolean treeToRpnT() {
 	free(treePostFix);
 	freeTreeCalculator(summit);
 
-	expr = createMallocStr("((8+2*(2+3))*2*(2+3)*(2+3)");
+	expr = createMallocStr("(8+2*(2+3))*2*(2+3)*(2+3)");
 	summit = createTreeFromExpr(expr);
 	treePostFix = treeToRpn(summit);
 	assertEqualsStr("32+2*8+2*32+*32+*", treePostFix, __FILE__, __LINE__);
