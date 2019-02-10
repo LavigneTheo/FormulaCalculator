@@ -33,6 +33,7 @@ float getNodeFloatValue(NodeCalculator* node);
 void ProcessNodeValue(NodeCalculator* Node);
 void processTree(NodeCalculator* node);
 void getFloatValues(NodeCalculator* node, float* num1, float* num2);
+void firstOperatorFound(char* expr, int* start, int* end, int indexLastOperator, Boolean* foundOperator, Boolean* found, Boolean strongOperator);
 
 NodeCalculator* createSecondElem(char* subExpr, List* listOperatorPtr);
 NodeCalculator* createFirstElem(char* subExpr, List* listOperatorPtr);

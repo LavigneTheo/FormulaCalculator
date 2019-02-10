@@ -14,6 +14,7 @@ typedef enum Boolean {
 }Boolean;
 
 char* getFileName(char* path);
+char* askExpr();
 
 Boolean assertEqualsBool(Boolean var1, Boolean var2, char* path, long line);
 Boolean assertEqualsStr(char* var1, char* var2, char* path, long line);

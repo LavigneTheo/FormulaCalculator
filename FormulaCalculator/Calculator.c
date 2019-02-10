@@ -282,10 +282,11 @@ NodeCalculator* createNodeCalculator(char* expr, List* listPtr) {
 	}
 }
 
-/* Renvoie une chaîne équivalent au contenue de l'interval passé en apramètre
- *
- *
- *
+/* Coupe une chaîne sur un intervalle donnée et renvoie le résultat.
+ * Params - char* expr : chaîne à couper
+ *		  - int start : début de la nouvelle chaîne
+ *		  - int end : fin de la nouvelle chaîne
+ * Return - char* : chaîne entre les borne start et end
  */
 char* cutStr(char* expr, int start, int end) {
 	char* res = malloc(sizeof(char) * (end - start) + 2);
@@ -295,10 +296,16 @@ char* cutStr(char* expr, int start, int end) {
 	return res;
 }
 
-/* Isole un nombre dans une chaine de charactère, commence par élémininer les
- * les charactères qui ne sont pas numérique pour ne garder que les chiffre.
- *
- */
+ /* A partir d'une chaîne de caractère, isole la valeur du noeud à creer.
+  * Cette valeur peut être un nombre ou un 'flag' commencant par un 'a'. Les deux
+  * boucles while servent à éliminer les espaces et parenthèse pour ne garder qu'un nombre ou flag.
+  * Params - char* expr : chaîne à à traiter
+  *		   - int start : ou commence la recherche du nombre / flag dans la chaîne.
+  *		   - int end : ou se fini la recherche du nombre / flag dans la chaîne.
+  *		   - char** value : RETURN
+  * Return - char** value : le résultat est stockée dans la variable 'value' passée en paramètre.
+  *							Elle contient une chaîne contenant un flag ou un nombre.
+  */
 void getValue(char* expr, int start, int end, char** value) {
 	while (isNumeric(*(expr + start)) == FALSE && *(expr + start) != 'a')
 		start++;
@@ -308,16 +315,29 @@ void getValue(char* expr, int start, int end, char** value) {
 	*value = cutStr(expr, start, end);
 }
 
+/* Convertit un entier en chaîne
+ * Params - int value : valeur à convertir en chaîne
+ * Return - char* : l'équivalent en chaîne de caractère du nombre passé en paramètre
+ */
 char* intToStr(int value) {
 	char* res = malloc(sizeof(char) * 13);
 	sprintf(res, "%d", value);
 	return res;
 }
 
-/* Détermine l'index de début fin de réécriture de la chaine.
- * Fait également atentition a ne supprimer qu'une parenthèse ouvrante dans le cas
- * de parenthèses multiples ex : '((2+2)...'
- */
+ /* Détermine l'intervalle sur lequelle réécrire la formule.
+  * Le premier if traite le cas ou l'on garde une parenthèse en 1er caractère : '(6 * 3'
+  * Le premier if traite le cas ou l'on garde une parenthère présente en dernier caractère : '6 * 3)'
+  * La boucle while traite le cas ou plusieurs parenthèses sont présente en début d'éxpréssion. Dans ce
+  * on ne souhaite n'est supprimé qu'une : '((9+1)'
+  * Appele ensuite la fonction de réécriture sur l'interval obtenu
+  * Params - char* expr : chaîne contenant l'expression
+  *		   - int start : début de l'intervalle sur lequel réécrire l'expression
+  *		   - int start : fin de l'intervalle sur lequel réécrire l'expression
+  *		   - int index : index auxquel à été inséré l'opérateur dans la liste, lors de la réécriture,
+						 l'expression sera remplacer par un flag commencant par 'a' suivi de l'index : 'a18'
+  * Return - char* : la chaîne mise à jours
+  */
 char* updateStr(char* expr, int start, int end, int index) {
 	if (*(expr + start) == '(' && *(expr + end) != ')')
 		start++;
@@ -329,6 +349,13 @@ char* updateStr(char* expr, int start, int end, int index) {
 	return rewriteStr(expr, start, end, index);
 }
 
+/* Remplace une partir de l'expression passé en paramètre par un flag. ex : 'a18'
+ * Params - char* expr : l'expression à modifier
+ *		  - int start : début de l'interval sur lequel réécrire la fonction
+ *		  - int end : fin de l'interval sur lequel réécrire la fonction
+ *		  - int index : index auxquel à été inséré l'opérateur dans la liste
+ * Return - char* : expression mise à jours, où l'interval à été remplacer par un flag 
+ */
 char* rewriteStr(char* expr, int start, int end, int index) {
 	char* tmp = intToStr(index);
 	int newSize = strlen(tmp) + 1 + strlen(expr) - end + start;
@@ -346,6 +373,15 @@ char* rewriteStr(char* expr, int start, int end, int index) {
 	return res;
 }
 
+/* Calcul récursivement l'expression stocker dans l'arbre binaire. On va systèmatiquement
+ * sur les noeuds situés à gauche, en revanche on ne descent à droite que dans es cas où 
+ * le noeud est un opérateur.
+ * On calcul ensuite la valeur du noued ssi le noeud est un opérateur.
+ * En fin de processus le sommet de l'arbre contient dans le champ 'totalValue' la valeur de 
+ * l'expression stockée.
+ * Params - NodeCalculator* node : sommet de l'arbre
+ * Return - void
+ */
 void processTree(NodeCalculator* node) {
 	if (node->left != NULL)
 		processTree(node->left);
@@ -355,12 +391,28 @@ void processTree(NodeCalculator* node) {
 		ProcessNodeValue(node);
 }
 
+/* Retourne la valeur du noeud passé en paramètre. Si c'est un opérateur, sa valeur est
+ * stocké dans le champ 'totalValue', sinon on convertit le value du noeud en entier puis
+ * on le cast en float.
+ * Params - NodeCalculator* node : noeud dont on veut obtenir la valeur
+ * Return - float : valeur numérique du noeud
+ */
 float getNodeFloatValue(NodeCalculator* node) {
 	if (node->operator == TRUE)
 		return node->totalValue;
 	return  (float)strToInt(node->value);
 }
 
+/* A partir d'un noeud contenant un opérateur, permet d'obtenir les deux nombre 
+ * nécéssaires pour éfféctuer l'opération. Si lors de l'insertion, l'ordre à été
+ * inversé, on inverse de nouveau les termes. Cela permet au opération non commutative de
+ * fonctionner correctement.
+ * Params - NodeCalculator* node : opérateur
+ *	      - float* num1 : RETURN
+ *	      - float* num2 : RETURN
+ * Return - float num1 : valeur du premier terme de l'opération
+ *		  - float num2 : valeur du second terme de l'opération
+ */
 void getFloatValues(NodeCalculator* node, float* num1, float* num2) {
 	if (!node->reverse) {
 		*num1 = getNodeFloatValue(node->left);
@@ -372,6 +424,11 @@ void getFloatValues(NodeCalculator* node, float* num1, float* num2) {
 	}
 }
 
+/* Effectue une opération à partir d'un opérateur et la stocke dans le champ 'totlValue'. 
+ * Récupère préalablement les deux termes nécéssaires pour éfféctuer l'opération.
+ * Params - NodeCalculator* node : noeud dont on veut obtenir la valeur
+ * Return - void
+ */
 void ProcessNodeValue(NodeCalculator* node) {
 	float a = 0, b = 0;
 	getFloatValues(node, &a, &b);
@@ -388,12 +445,16 @@ void ProcessNodeValue(NodeCalculator* node) {
 	node->totalValue = value;
 }
 
-/* Retourne les borne la prochaine sous exression à inséré dans l'arbre. Le retour se fait par
- * le biais des paramètres start et end. Start doit être initialisé au bon index avant l'appel
- * de la fontion.
- *
- *
- */
+ /* Détermine l'interval de la prochaine opération à éffécteur. Dans un premier temps, on cerche un premier opérateur.
+  * Lorsque l'on trouve cet opérateur, on garde en mémoire son index, ainsi que la priorité de cet opérteur. 
+  * Ensuite c'est la fonction 'firstOperatorFound' qui va déterminer si determine si l'on a éfféctivement trouver une expression
+  * valide. Si l'on a pas trouver l'expression en fin de boucle, on teste le caractère suivant.
+  * Params - char* expr : expression où trouver une opération
+  *		   - int* start : début de l'interval où chercher l'opération
+  *		   - int* end : égal à start
+  * Return - int* start : début de l'interval où se trouve l'opération
+  *		   - int* end : fin de l'interval où se trouve l'opération
+  */
 void limitTriangle(char* expr, int* start, int* end) {
 	*end = *start;
 	Boolean found = FALSE, foundOperator = FALSE, strongOperator;
@@ -408,28 +469,53 @@ void limitTriangle(char* expr, int* start, int* end) {
 			}
 		}
 		else {
-			if (*(expr + *end) == '(') {
-				*start = *end;
-				foundOperator = FALSE;
-			}
-			else if (*(expr + *end) == ')') {
-				found = TRUE;
-			}
-			else  if (isOperator(*(expr + *end))) {
-				if (strongOperator) {
-					(*end)--;
-				}
-				else {
-					*start = *end = indexLastOperator + 1;
-					limitTriangle(expr, start, end);
-				}
-				found = TRUE;
-			}
-			else if (*end + 1 >= strlen(expr)) {
-				found = TRUE;
-			}
+			firstOperatorFound(expr, start, end, indexLastOperator, &foundOperator, &found, strongOperator);
 		}
 		if (!found)
 			(*end)++;
+	}
+}
+
+/* Détermine si le caractère à l'index 'end' donne la fin d'une opération qui peut être traitée. Une opération  peut
+ * être traitée si elle respespect l'ordre de priorité (priorité du *  sur le + par ex). 
+ * 1er if : le caractère est une parenthèse ouvrante, l'expression précédente n'est pas à traité pour le moment.
+ * 2em if : le caractère est une paenthèse fermante, l'expression peut être traitée. 
+ * 3eù if : le caractère est un autre opérateur. Si l'opérateur précédent un opérateur fort, l'expression peut être traitée.
+ *          Sinon on préfera appélé de nouveau 'limitTriangle' sur un interval excluant les caractère précédent le premier
+ *          opérateur ainsi que l'opérateur lui même. Cela traite le cas : '9 + 9 + 8 * 2' où 8 * 2 est l'opération prioritaire.
+ * 4em if : On a atteint la fin de la chaîne, on peut traiter l'opération précédente puisqu'il n'y ne peut y avoir des opération
+ *          prioritaires ensuite.
+ * Params - char* expr : expression où trouver une opération
+ *		   - int* start : début de l'interval où chercher l'opération
+ *		   - int* end : caractère de la possible fin de l'opération
+ *		   - int end : l'index du premier opérateur trouvé
+ *		   - Boolean* foundOperator : si on à trouver le premier opérateur de l'expression.
+ *		   - Boolean* found : si on à trouver les bornes de l'expression
+ *		   - Boolean strongOperator : si le premier opérateur trouvé est un opérateur prioritaire
+ * Return - int* start : début de l'interval où se trouve l'opération
+ *		  - int* end : fin de l'interval où se trouve l'opération
+ *		  - Boolean* foundOperator : si l'on doit trouver de nouveau un premier opérateur, mis à 'FALSE'
+ *		  - Boolean* found : si l'on à trouver les bornes de l'opération
+ */
+void firstOperatorFound(char* expr, int* start, int* end, int indexLastOperator, Boolean* foundOperator, Boolean* found, Boolean strongOperator) {
+	if (*(expr + *end) == '(') {
+		*start = *end;
+		*foundOperator = FALSE;
+	}
+	else if (*(expr + *end) == ')') {
+		*found = TRUE;
+	}
+	else  if (isOperator(*(expr + *end))) {
+		if (strongOperator) {
+			(*end)--;
+		}
+		else {
+			*start = *end = indexLastOperator + 1;
+			limitTriangle(expr, start, end);
+		}
+		*found = TRUE;
+	}
+	else if (*end + 1 >= strlen(expr)) {
+		*found = TRUE;
 	}
 }

@@ -75,7 +75,6 @@ Boolean processTreeT() {
 
 	expr = createMallocStr("  (( 2 +(8-1) * 10 - 2)- ((7-0) * 2 -2)/12) * 2");
 	summit = createTreeFromExpr(expr);
-	printf("%s\n", treeToRpn(summit));
 
 	processTree(summit);
 	assertEqualsFloat(138, summit->totalValue, __FILE__, __LINE__);

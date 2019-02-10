@@ -42,3 +42,5 @@ void free_list(List* list);
 
 int listTotalChar(List* listOfStr);
 char* listStrToStr(List* list);
+
+char* listCharToStr(List* list);

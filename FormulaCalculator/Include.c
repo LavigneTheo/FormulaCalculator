@@ -97,3 +97,15 @@ Boolean assertNull(void* value, char* const path, long line) {
 		return TRUE;
 	}
 }
+
+char* askExpr() {
+	char c;
+	List* list = get_list(NULL, sizeof(char));
+	printf("Saisissez la formule : \n");
+	while ((c = getchar()) != '\n') {
+		append(list, &c);
+	}
+	char* expr = listCharToStr(list);
+	free_list(list);
+	return expr;
+}
